@@ -16,14 +16,14 @@ class ProductProduct(models.Model):
         res = self.product_tmpl_id._get_product_attributes_dict()
         for val in res:
             value = self.product_template_attribute_value_ids.filtered(
-                lambda x: x.attribute_id.id == val["attribute_id"]
+                lambda r, val=val: r.attribute_id.id == val["attribute_id"]
             )
             val["value_id"] = value.product_attribute_value_id.id
         return res
 
     def _get_product_attributes_values_text(self):
         description = self.product_template_attribute_value_ids.mapped(
-            lambda x: f"{x.attribute_id.name}: {x.name}"
+            lambda r: f"{r.attribute_id.name}: {r.name}"
         )
         if description:
             return "{}\n{}".format(self.product_tmpl_id.name, "\n".join(description))
@@ -114,7 +114,7 @@ class ProductProduct(models.Model):
             return
         for product in self:
             req_attrs = product.product_tmpl_id.attribute_line_ids.filtered(
-                lambda a: a.required
+                lambda r: r.required
             ).mapped("attribute_id")
             errors = req_attrs - product.product_template_attribute_value_ids.mapped(
                 "attribute_id"
@@ -124,20 +124,6 @@ class ProductProduct(models.Model):
                     _("You have to fill the following attributes:\n%s")
                     % "\n".join(errors.mapped("name"))
                 )
-
-    def name_get(self):
-        """We need to add this for avoiding an odoo.exceptions.AccessError due
-        to some refactoring done upstream on read method + variant name_get
-        in Odoo. With this, we avoid to call super on the specific case of
-        virtual records, providing simply the name, which is acceptable.
-        """
-        res = []
-        for product in self:
-            if isinstance(product.id, models.NewId):
-                res.append((product.id, product.name))
-            else:
-                res.append(super(ProductProduct, product).name_get()[0])
-        return res
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -171,4 +157,4 @@ class ProductProduct(models.Model):
             )
             vals.pop("product_attribute_ids")
             vals["product_template_attribute_value_ids"] = [(4, x) for x in ptav]
-        return super(ProductProduct, self).create(vals_list)
+        return super().create(vals_list)

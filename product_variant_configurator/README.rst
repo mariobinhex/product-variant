@@ -127,6 +127,7 @@ Contributors
 -  Simone Versienti <s.versienti@apuliasoftware.it>
 -  Adria Gil Sorribes <adria.gil@forgeflow.com>
 -  Héctor Villarreal Ortega <hector.villarreal@forgeflow.com>
+-  Mario Luis Mora <m.luis@binhex.cloud>
 
 Maintainers
 -----------

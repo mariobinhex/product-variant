@@ -5,24 +5,23 @@ from odoo.tests.common import TransactionCase
 
 
 class TestProductVariant(TransactionCase):
-    def setUp(self):
-        super(TestProductVariant, self).setUp()
-        self.tmpl_model = self.env["product.template"].with_context(
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.tmpl_model = cls.env["product.template"].with_context(
             check_variant_creation=True
         )
-        self.categ_model = self.env["product.category"]
-        self.categ1 = self.categ_model.create({"name": "No create variants category"})
-        self.categ2 = self.categ_model.create(
+        cls.categ_model = cls.env["product.category"]
+        cls.categ1 = cls.categ_model.create({"name": "No create variants category"})
+        cls.categ2 = cls.categ_model.create(
             {"name": "Create variants category", "no_create_variants": False}
         )
-        self.attribute = self.env["product.attribute"].create(
-            {"name": "Test Attribute"}
+        cls.attribute = cls.env["product.attribute"].create({"name": "Test Attribute"})
+        cls.value1 = cls.env["product.attribute.value"].create(
+            {"name": "Value 1", "attribute_id": cls.attribute.id}
         )
-        self.value1 = self.env["product.attribute.value"].create(
-            {"name": "Value 1", "attribute_id": self.attribute.id}
-        )
-        self.value2 = self.env["product.attribute.value"].create(
-            {"name": "Value 2", "attribute_id": self.attribute.id}
+        cls.value2 = cls.env["product.attribute.value"].create(
+            {"name": "Value 2", "attribute_id": cls.attribute.id}
         )
 
     def test_no_create_variants(self):

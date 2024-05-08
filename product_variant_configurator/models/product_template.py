@@ -50,23 +50,23 @@ class ProductTemplate(models.Model):
             for vals in vals_list:
                 # Needed because ORM removes this value from the dictionary
                 vals["name"] = self.env.context["product_name"]
-        return super(ProductTemplate, self).create(vals_list)
+        return super().create(vals_list)
 
     def write(self, values):
-        res = super(ProductTemplate, self).write(values)
+        res = super().write(values)
         if "no_create_variants" in values:
             self._create_variant_ids()
         return res
 
     def _get_product_attributes_dict(self):
         return self.attribute_line_ids.mapped(
-            lambda x: {"attribute_id": x.attribute_id.id}
+            lambda r: {"attribute_id": r.attribute_id.id}
         )
 
     def _create_variant_ids(self):
         obj = self.with_context(creating_variants=True)
         if config["test_enable"] and not self.env.context.get("check_variant_creation"):
-            return super(ProductTemplate, obj)._create_variant_ids()
+            return super()._create_variant_ids()
         for tmpl in obj:
             if (
                 (
@@ -76,17 +76,15 @@ class ProductTemplate(models.Model):
                 or tmpl.no_create_variants == "no"
                 or not tmpl.attribute_line_ids
             ):
-                super(ProductTemplate, tmpl)._create_variant_ids()
+                super()._create_variant_ids()
         return True
 
     @api.model
     def name_search(self, name="", args=None, operator="ilike", limit=100):
         # Make a search with default criteria
-        temp = super(models.Model, self).name_search(
-            name=name, args=args, operator=operator, limit=limit
-        )
+        temp = super().name_search(name=name, args=args, operator=operator, limit=limit)
         # Make the other search
-        temp += super(ProductTemplate, self).name_search(
+        temp += super().name_search(
             name=name, args=args, operator=operator, limit=limit
         )
         # Merge both results

@@ -17,9 +17,7 @@ class ProductConfiguratorAttribute(models.Model):
     product_tmpl_id = fields.Many2one(
         comodel_name="product.template", string="Product Template", required=True
     )
-    attribute_id = fields.Many2one(
-        comodel_name="product.attribute", string="Attribute", readonly=True
-    )
+    attribute_id = fields.Many2one(comodel_name="product.attribute", string="Attribute")
     value_id = fields.Many2one(
         comodel_name="product.attribute.value",
         domain="[('id', 'in', possible_value_ids)]",
@@ -28,7 +26,6 @@ class ProductConfiguratorAttribute(models.Model):
     possible_value_ids = fields.Many2many(
         comodel_name="product.attribute.value",
         compute="_compute_possible_value_ids",
-        readonly=True,
     )
 
     price_extra = fields.Float(
@@ -44,7 +41,8 @@ class ProductConfiguratorAttribute(models.Model):
         for record in self:
             # This should be unique due to the new constraint added
             attribute = record.product_tmpl_id.attribute_line_ids.filtered(
-                lambda x: x.attribute_id == record.attribute_id
+                lambda r, attribute_id=record.attribute_id: r.attribute_id
+                == attribute_id
             )
             record.possible_value_ids = attribute.value_ids.sorted()
 

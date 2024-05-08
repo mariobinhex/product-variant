@@ -37,7 +37,6 @@ class ProductConfigurator(models.AbstractModel):
     )
     product_id_configurator_domain = fields.Binary(
         compute="_compute_product_id_configurator_domain",
-        readonly=True,
         store=False,
     )
     can_create_product = fields.Boolean(compute="_compute_can_be_created")
@@ -199,7 +198,7 @@ class ProductConfigurator(models.AbstractModel):
         res2 = []
         for val in res:
             value = product_attribute_values.filtered(
-                lambda x: x.attribute_id.id == val["attribute_id"]
+                lambda r, val=val: r.attribute_id.id == val["attribute_id"]
             )
             if value:
                 val["value_id"] = value
@@ -251,7 +250,7 @@ class ProductConfigurator(models.AbstractModel):
     def unlink(self):
         """Mimic `ondelete="cascade"`."""
         attributes = self.mapped("product_attribute_ids")
-        result = super(ProductConfigurator, self).unlink()
+        result = super().unlink()
         if result:
             attributes.unlink()
         return result
@@ -280,13 +279,15 @@ class ProductConfigurator(models.AbstractModel):
                 product_attribute = product_attribute_value.attribute_id
                 existing_attribute_line = (
                     self.product_tmpl_id.attribute_line_ids.filtered(  # noqa
-                        lambda l: l.attribute_id == product_attribute
+                        lambda r, attribute_id=product_attribute: r.attribute_id
+                        == attribute_id
                     )
                 )
                 product_template_attribute_values |= (
                     existing_attribute_line.product_template_value_ids.filtered(  # noqa
-                        lambda v: v.product_attribute_value_id
-                        == product_attribute_value
+                        lambda r,
+                        vals=product_attribute_value: r.product_attribute_value_id
+                        == vals
                     )
                 )
             product = product_obj.create(
